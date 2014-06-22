@@ -1,0 +1,96 @@
+<html>
+<head>
+
+  <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript">
+    //document ready
+    $(function(){
+
+      var sio = io.connect();
+      
+      var messageText = $('#messageText');
+
+      var usernameText = $('#usernameText');
+
+      //send username to the server
+      $('#usernameForm').submit(function(event){
+          event.preventDefault();
+          sio.emit('username', usernameText.val(), function(validUsername){
+            if(validUsername){
+              $('#usernameWrap').hide();
+              $('#messageWrap').show();
+            }else{
+              $('#usernameTakenError').html('Username is taken, please enter a new username.');
+            }
+
+          });
+          usernameText.val('');
+      });
+
+      //send user message to the server
+      $('#messageForm').submit(function(event){
+        //prevent refresh the page
+        event.preventDefault();
+        sio.emit('message', messageText.val());
+        //empty user input box
+        messageText.val('');
+      });
+
+      //receive message from server
+      sio.on('message', function(msgrec){
+        $('#display').append(msgrec.user +': '+ msgrec.msg +'<br/><hr>');
+      });
+      
+    });
+
+  </script>
+  <title>Game Chat</title>
+
+  <style type="text/css">
+    body{
+        background-color:#FFFF99;
+    }
+    h1{
+      color: 663300;
+    }
+    #display{
+      height: 350px;
+      font-size: 16pt;
+      color: 3300CC;
+    }
+    #messageWrap{
+      display: none;
+      font-size: 14pt;
+      color: 663300;
+    }
+    #usernameWrap{
+      font-size: 14pt;
+      color: 663300;
+    }
+  </style>
+</head>
+<body>
+  <h1>Game Chat Room</h1>
+  <hr>
+  <div id="display"></div>
+  <hr>
+
+  <div id="usernameWrap">   
+    <form id="usernameForm">
+      <b>Enter a username:</b>
+      <input type="text" size="30" id="usernameText" />
+      <input type="submit" value="Submit" />
+    </form>
+    <p id="usernameTakenError"></p>
+  </div>
+
+  <div id="messageWrap">
+    <form id="messageForm">
+      Enter your message:<br/>
+      <input type="text" size="50" id="messageText" />
+      <input type="submit" value="Submit" />
+    </form>
+  </div>
+</body>
+</html>
